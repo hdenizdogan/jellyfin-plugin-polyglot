@@ -20,6 +20,7 @@ public sealed class PolyglotUserManager
     // Cached reflection info
     private static MethodInfo? _getUserByIdMethod;
     private static PropertyInfo? _usersProperty;
+    private static MethodInfo? _getUsersMethod;
     private static MethodInfo? _updateUserAsyncMethod;
 
     /// <summary>
@@ -61,32 +62,49 @@ public sealed class PolyglotUserManager
         }
     }
 
-    /// <summary>
-    /// Gets all users, wrapped in PolyglotUser.
-    /// </summary>
-    /// <returns>An enumerable of PolyglotUser instances.</returns>
     public IEnumerable<PolyglotUser> GetUsers()
     {
-        var property = GetCachedProperty(ref _usersProperty, "Users");
-        if (property == null)
-        {
-            return Enumerable.Empty<PolyglotUser>();
-        }
-
-        try
-        {
-            var result = property.GetValue(_userManager);
-            if (result is System.Collections.IEnumerable enumerable)
+            // Jellyfin 10.11.x removed the IUserManager.Users property in favor of
+            // the GetUsers() method. Try the method first since it's supported by
+            // both 10.10.x and 10.11.x; only fall back to the old property for any
+            // older/unusual builds that might lack GetUsers().
+            var method = GetCachedMethod(ref _getUsersMethod, "GetUsers");
+            if (method != null)
             {
-                return enumerable.Cast<object>().Select(u => new PolyglotUser(u));
+                try
+                {
+                    var methodResult = method.Invoke(_userManager, Array.Empty<object>());
+                    if (methodResult is System.Collections.IEnumerable methodEnumerable)
+                    {
+                        return methodEnumerable.Cast<object>().Select(u => new PolyglotUser(u)).ToList();
+                    }
+                }
+                catch
+                {
+                    // Fall through to property-based lookup
+                }
             }
-        }
-        catch
-        {
-            // Fall through
-        }
 
-        return Enumerable.Empty<PolyglotUser>();
+            var property = GetCachedProperty(ref _usersProperty, "Users");
+            if (property == null)
+            {
+                return Enumerable.Empty<PolyglotUser>();
+            }
+
+            try
+            {
+                var result = property.GetValue(_userManager);
+                if (result is System.Collections.IEnumerable enumerable)
+                {
+                    return enumerable.Cast<object>().Select(u => new PolyglotUser(u)).ToList();
+                }
+            }
+            catch
+            {
+                // Fall through
+            }
+
+            return Enumerable.Empty<PolyglotUser>();
     }
 
     /// <summary>
