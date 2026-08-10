@@ -10,6 +10,14 @@
     "repositoryUrl": "https://github.com/Maronato/jellyfin-plugin-polyglot",
     "versions": [
       {
+        "version": "0.9.6.3",
+        "changelog": "**Full Changelog**: https://github.com/hdenizdogan/jellyfin-plugin-polyglot/compare/v0.9.6.1...v0.9.6.3",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/hdenizdogan/jellyfin-plugin-polyglot/releases/download/v0.9.6.3/polyglot_0.9.6.3.zip",
+        "checksum": "39c0e254c327facd63f4056732417653",
+        "timestamp": "2026-08-10T14:51:01Z"
+      },
+      {
         "version": "0.9.6.2",
         "changelog": "**Full Changelog**: https://github.com/hdenizdogan/jellyfin-plugin-polyglot/commits/v0.9.6.2",
         "targetAbi": "10.11.0.0",
