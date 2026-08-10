@@ -71,16 +71,19 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()
-    {
-        return new[]
         {
-            new PluginPageInfo
+            return new[]
             {
-                Name = Name,
-                EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.configPage.html"
-            }
-        };
-    }
+                new PluginPageInfo
+                {
+                    Name = Name,
+                    EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.configPage.html",
+                    EnableInMainMenu = true,
+                    MenuSection = "server",
+                    MenuIcon = "translate"
+                }
+            };
+        }
 
     /// <inheritdoc />
     public override void OnUninstalling()
@@ -140,20 +143,5 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         {
             _logger.PolyglotError(ex, "Plugin OnUninstalling: Unexpected error during cleanup");
         }
-    }
-
-    public IEnumerable<PluginPageInfo> GetPages()
-    {
-        return new[]
-        {
-            new PluginPageInfo
-            {
-                Name = Name,
-                EmbeddedResourcePath = $"{GetType().Namespace}.Configuration.configPage.html",
-                EnableInMainMenu = true,
-                MenuSection = "server",
-                MenuIcon = "translate"
-            }
-        };
     }
 }
