@@ -52,7 +52,10 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         _applicationPaths = applicationPaths;
         _logger = logger;
 
-        EnsureSidebarMenuLink();
+        // Clean up the config.json menuLinks entry from a previous version of this plugin.
+        // The admin sidebar shortcut is now handled natively via GetPages()/EnableInMainMenu below,
+        // so this main-page hamburger-menu shortcut is no longer needed.
+        RemoveSidebarMenuLink();
     }
 
     /// <inheritdoc />
@@ -146,74 +149,8 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     }
 
     /// <summary>
-    /// Adds a "Polyglot" entry to the web client's sidebar menu by editing config.json,
-    /// using Jellyfin's built-in menuLinks feature (available since 10.8). This is idempotent;
-    /// it does nothing if the link is already present.
-    /// </summary>
-    private void EnsureSidebarMenuLink()
-    {
-        try
-        {
-            var webConfigPath = Path.Combine(_applicationPaths.WebPath, "config.json");
-
-            if (!File.Exists(webConfigPath))
-            {
-                _logger.PolyglotWarning(
-                    "EnsureSidebarMenuLink: config.json not found at {0}; server may not be hosting static web content, skipping",
-                    webConfigPath);
-                return;
-            }
-
-            var json = File.ReadAllText(webConfigPath);
-            if (JsonNode.Parse(json) is not JsonObject root)
-            {
-                _logger.PolyglotWarning("EnsureSidebarMenuLink: Unable to parse config.json, skipping");
-                return;
-            }
-
-            if (root["menuLinks"] is not JsonArray menuLinks)
-            {
-                menuLinks = new JsonArray();
-                root["menuLinks"] = menuLinks;
-            }
-
-            var alreadyPresent = menuLinks.Any(node =>
-                node is JsonObject obj &&
-                string.Equals(obj["name"]?.GetValue<string>(), SidebarLinkName, StringComparison.Ordinal));
-
-            if (alreadyPresent)
-            {
-                return;
-            }
-
-            menuLinks.Add(new JsonObject
-            {
-                ["name"] = SidebarLinkName,
-                ["icon"] = "translate",
-                ["url"] = "/web/#/configurationpage?name=Polyglot"
-            });
-
-            File.WriteAllText(webConfigPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
-
-            _logger.PolyglotInfo("EnsureSidebarMenuLink: Added Polyglot sidebar link to config.json");
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            _logger.PolyglotWarning(
-                ex,
-                "EnsureSidebarMenuLink: Permission denied writing to config.json. If running in Docker, the web " +
-                "files may be owned by a different user than the Jellyfin process; the sidebar link will need to " +
-                "be added manually.");
-        }
-        catch (Exception ex)
-        {
-            _logger.PolyglotWarning(ex, "EnsureSidebarMenuLink: Failed to add sidebar menu link");
-        }
-    }
-
-    /// <summary>
-    /// Removes the "Polyglot" sidebar menu link from config.json, run during plugin uninstall
-    /// to avoid leaving a dead link behind.
+    /// Removes the "Polyglot" sidebar menu link from config.json. Used both to clean up a leftover
+    /// entry from a previous plugin version on startup, and during uninstall.
     /// </summary>
     private void RemoveSidebarMenuLink()
     {
