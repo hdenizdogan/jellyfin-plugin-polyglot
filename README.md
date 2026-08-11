@@ -38,13 +38,13 @@ Polyglot creates language-specific "mirror" libraries using filesystem hardlinks
 1. **Dashboard → Plugins → Repositories → Add**
 2. Enter:
     - Name: `Polyglot`
-    - URL: `https://raw.githubusercontent.com/Maronato/jellyfin-plugin-polyglot/main/manifest.json`
+    - URL: `https://raw.githubusercontent.com/hdenizdogan/jellyfin-plugin-polyglot/main/manifest.json`
 3. **Catalog → Polyglot → Install**
 4. Restart Jellyfin
 
 ### Manual Installation
 
-Download from [Releases](https://github.com/Maronato/jellyfin-plugin-polyglot/releases) and extract to:
+Download from [Releases](https://github.com/hdenizdogan/jellyfin-plugin-polyglot/releases) and extract to:
 
 -   Linux: `/var/lib/jellyfin/plugins/Polyglot/`
 -   Windows: `%APPDATA%\Jellyfin\Server\plugins\Polyglot\`
